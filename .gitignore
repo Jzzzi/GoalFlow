@@ -21,3 +21,7 @@
 /pretrained
 /tests
 /data
+
+/env.sh
+/pyrightconfig.json
+/dataset
