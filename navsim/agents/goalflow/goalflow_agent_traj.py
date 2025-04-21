@@ -29,9 +29,9 @@ class GoalFlowTrajAgent(AbstractAgent):
         lr: float,
         step_size: int = 20,
         gamma: float = 0.8,
-        checkpoint_path: str = None,
+        checkpoint_path: str = None, # type: ignore
     ):
-        super().__init__()
+        super().__init__(config.trajectory_sampling, requires_scene=False)
 
         self._config = config
         self._lr = lr

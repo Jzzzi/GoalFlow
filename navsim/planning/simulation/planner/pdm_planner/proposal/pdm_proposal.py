@@ -3,9 +3,7 @@ from typing import List
 
 from shapely.geometry import LineString
 
-from navsim.planning.simulation.planner.pdm_planner.proposal.batch_idm_policy import (
-    BatchIDMPolicy,
-)
+from navsim.planning.simulation.planner.pdm_planner.proposal.batch_idm_policy import BatchIDMPolicy
 from navsim.planning.simulation.planner.pdm_planner.utils.pdm_path import PDMPath
 
 

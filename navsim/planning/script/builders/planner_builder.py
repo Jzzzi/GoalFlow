@@ -2,10 +2,9 @@ from typing import List, Optional, Type, cast
 
 from hydra._internal.utils import _locate
 from hydra.utils import instantiate
-from omegaconf import DictConfig
-
 from nuplan.planning.scenario_builder.abstract_scenario import AbstractScenario
 from nuplan.planning.simulation.planner.abstract_planner import AbstractPlanner
+from omegaconf import DictConfig
 
 
 def _build_planner(planner_cfg: DictConfig, scenario: Optional[AbstractScenario]) -> AbstractPlanner:
@@ -16,7 +15,7 @@ def _build_planner(planner_cfg: DictConfig, scenario: Optional[AbstractScenario]
     :return AbstractPlanner
     """
     config = planner_cfg.copy()
-    
+
     planner_cls: Type[AbstractPlanner] = _locate(config._target_)
 
     if planner_cls.requires_scenario:

@@ -1,27 +1,34 @@
-import hydra
-from hydra.utils import instantiate
 import logging
-from omegaconf import DictConfig
 import os
-from pathlib import Path
-import pytorch_lightning as pl
-from typing import Any, Dict, List, Optional, Union
 import uuid
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
-from navsim.planning.training.dataset import Dataset
-from navsim.common.dataloader import SceneLoader
-from navsim.common.dataclasses import SceneFilter, SensorConfig
-from navsim.agents.abstract_agent import AbstractAgent
-
+import hydra
+import pytorch_lightning as pl
+from hydra.utils import instantiate
 from nuplan.planning.utils.multithreading.worker_pool import WorkerPool
 from nuplan.planning.utils.multithreading.worker_utils import worker_map
+from omegaconf import DictConfig
+
+from navsim.agents.abstract_agent import AbstractAgent
+from navsim.common.dataclasses import SceneFilter, SensorConfig
+from navsim.common.dataloader import SceneLoader
+from navsim.planning.training.dataset import Dataset
 
 logger = logging.getLogger(__name__)
 
 CONFIG_PATH = "config/training"
-CONFIG_NAME= "goalflow_training"
+CONFIG_NAME = "default_training"
 
-def cache_features(args: List[Dict[str, Union[List[str], DictConfig]]]) -> List[Optional[Any]]:
+
+def cache_features(
+    args: List[Dict[str, Union[List[str], DictConfig]]]
+) -> List[Optional[Any]]:
+    """
+    Helper function to cache features and targets of learnable agent.
+    :param args: arguments for caching
+    """
     node_id = int(os.environ.get("NODE_RANK", 0))
     thread_id = str(uuid.uuid4())
 
@@ -31,12 +38,14 @@ def cache_features(args: List[Dict[str, Union[List[str], DictConfig]]]) -> List[
 
     agent: AbstractAgent = instantiate(cfg.agent)
 
-    scene_filter: SceneFilter =instantiate(cfg.scene_filter)
+    scene_filter: SceneFilter = instantiate(cfg.train_test_split.scene_filter)
     scene_filter.log_names = log_names
     scene_filter.tokens = tokens
     scene_loader = SceneLoader(
-        sensor_blobs_path=Path(cfg.sensor_blobs_path),
+        synthetic_sensor_path=Path(cfg.synthetic_sensor_path),
+        original_sensor_path=Path(cfg.original_sensor_path),
         data_path=Path(cfg.navsim_log_path),
+        synthetic_scenes_path=Path(cfg.synthetic_scenes_path),
         scene_filter=scene_filter,
         sensor_config=agent.get_sensor_config(),
     )
@@ -54,8 +63,12 @@ def cache_features(args: List[Dict[str, Union[List[str], DictConfig]]]) -> List[
     return []
 
 
-@hydra.main(config_path=CONFIG_PATH, config_name=CONFIG_NAME)
+@hydra.main(config_path=CONFIG_PATH, config_name=CONFIG_NAME, version_base=None)
 def main(cfg: DictConfig) -> None:
+    """
+    Main entrypoint for dataset caching script.
+    :param cfg: omegaconf dictionary
+    """
     logger.info("Global Seed set to 0")
     pl.seed_everything(0, workers=True)
 
@@ -63,16 +76,21 @@ def main(cfg: DictConfig) -> None:
     worker: WorkerPool = instantiate(cfg.worker)
 
     logger.info("Building SceneLoader")
-    scene_filter: SceneFilter = instantiate(cfg.scene_filter)
+    scene_filter: SceneFilter = instantiate(cfg.train_test_split.scene_filter)
     data_path = Path(cfg.navsim_log_path)
-    sensor_blobs_path = Path(cfg.sensor_blobs_path)
+    synthetic_sensor_path = Path(cfg.synthetic_sensor_path)
+    original_sensor_path = Path(cfg.original_sensor_path)
     scene_loader = SceneLoader(
-        sensor_blobs_path=sensor_blobs_path,
+        synthetic_sensor_path=synthetic_sensor_path,
+        original_sensor_path=original_sensor_path,
         data_path=data_path,
+        synthetic_scenes_path=Path(cfg.synthetic_scenes_path),
         scene_filter=scene_filter,
         sensor_config=SensorConfig.build_no_sensors(),
     )
-    logger.info(f"Extracted {len(scene_loader)} scenarios for training/validation dataset")
+    logger.info(
+        f"Extracted {len(scene_loader)} scenarios for training/validation dataset"
+    )
 
     data_points = [
         {
@@ -84,8 +102,10 @@ def main(cfg: DictConfig) -> None:
     ]
 
     _ = worker_map(worker, cache_features, data_points)
+    logger.info(
+        f"Finished caching {len(scene_loader)} scenarios for training/validation dataset"
+    )
 
-    logger.info(f"Finished caching {len(scene_loader)} scenarios for training/validation dataset")
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,5 @@
+- agent=goalflow_agent_traj
+- experiment_name=a_goalflow_trainval_cache
+- cache_path=$NAVSIM_EXP_ROOT/dataset_cache_traival
+- train_test_split=trainval
+- split=trainval

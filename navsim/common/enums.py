@@ -1,7 +1,15 @@
 from enum import IntEnum
 
 
+class SceneFrameType(IntEnum):
+    """Intenum for scene frame types."""
+
+    ORIGINAL = 0
+    SYNTHETIC = 1
+
+
 class StateSE2Index(IntEnum):
+    """Intenum for SE(2) arrays."""
 
     _X = 0
     _Y = 1
@@ -12,9 +20,7 @@ class StateSE2Index(IntEnum):
         valid_attributes = [
             attribute
             for attribute in dir(cls)
-            if attribute.startswith("_")
-            and not attribute.startswith("__")
-            and not callable(getattr(cls, attribute))
+            if attribute.startswith("_") and not attribute.startswith("__") and not callable(getattr(cls, attribute))
         ]
         return len(valid_attributes)
 
@@ -47,6 +53,7 @@ class StateSE2Index(IntEnum):
 
 
 class BoundingBoxIndex(IntEnum):
+    """Intenum of bounding boxes in logs."""
 
     _X = 0
     _Y = 1
@@ -61,9 +68,7 @@ class BoundingBoxIndex(IntEnum):
         valid_attributes = [
             attribute
             for attribute in dir(cls)
-            if attribute.startswith("_")
-            and not attribute.startswith("__")
-            and not callable(getattr(cls, attribute))
+            if attribute.startswith("_") and not attribute.startswith("__") and not callable(getattr(cls, attribute))
         ]
         return len(valid_attributes)
 
@@ -122,7 +127,8 @@ class BoundingBoxIndex(IntEnum):
 
 
 class LidarIndex(IntEnum):
-    
+    """Intenum for lidar point cloud arrays."""
+
     _X = 0
     _Y = 1
     _Z = 2
@@ -135,9 +141,7 @@ class LidarIndex(IntEnum):
         valid_attributes = [
             attribute
             for attribute in dir(cls)
-            if attribute.startswith("_")
-            and not attribute.startswith("__")
-            and not callable(getattr(cls, attribute))
+            if attribute.startswith("_") and not attribute.startswith("__") and not callable(getattr(cls, attribute))
         ]
         return len(valid_attributes)
 
