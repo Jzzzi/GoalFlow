@@ -25,3 +25,5 @@
 /env.sh
 /pyrightconfig.json
 /dataset
+/env/
+/proxy/
